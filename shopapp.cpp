@@ -1,13 +1,13 @@
 #include <iostream>
 #include <cstdlib>
 #include <windows.h>
-#include<conio.h>
+#include <conio.h>
 using namespace std;
 void addcashier(string newcashier[100], string cashierlogin[100], int &currentcashier);
 void title();
 void adminMenu(int &enteringKeyforProducts);
 void profitLoss(long double &totalPurchasedAmountFromCostomer, long double &totalPurchasedAmountFromWholesale);
-double customerPurchase();
+
 void wholeSalePurchase(string arr[], int priceOfProducts[], int &currentProducts);
 void salePurchaseProfitLossMenu();
 void gotoxy(int x, int y);
@@ -15,20 +15,27 @@ void addproductsbyadmin(string arr[], int priceOfProducts[], int proSize, int &c
 void displayProducts(int priceOfProducts[], string arr[], int currentProducts);
 void adminCashierValidation(string passwordCashier, bool &pass2);
 void namePassCompare(string cashierlogin[], int currentcashier, string passwordCashier, bool &namecomp, bool &passcomp);
+void removeProducts(string arr[], int &currentProducts, string removedObjectName);
+void addcashier(int &countpc, int &currentCustomer, bool &true1);
+void totalsalepurchase(double totalCostofitemsPurchased[], int currentCustomer);
+void displaygoto(int countpc, string nameofproducts[][100], string nameofCustomer[], double totalCostofitemsPurchased[], int proSize, int currentCustomer);
+double customerPurchase(string nameofproducts[][100], string nameofCustomer[], double totalCostofitemsPurchased[], int proSize, int currentCustomer, string &proName, int countpc, double totalPurchasedAmountFromCostomer);
 int main()
 {
-    string newcashier[100], cashierlogin[100];
-    int currentcashier = 0, again = 1;
-    bool pass2 = false, passcomp, namecomp;
-     int enteringKey;
-        int countProducts = 0, proSize = 100, currentProducts = 0, priceOfProducts[100];
-        string arr[100];
+    string newcashier[100], cashierlogin[100], nameofproducts[100][100], proName;
+    int currentcashier = 0, again = 1, currentCustomer = 0, countpc = 0;
+    bool pass2 = false, passcomp, namecomp, true1;
+    int enteringKey;
+    int countProducts = 0, proSize = 100, currentProducts = 0, priceOfProducts[100];
+    string arr[100];
+    string nameofCustomer[100];
+    double noOfPurchaseditems[100], totalCostofitemsPurchased[100];
+    double totalPurchasedAmountFromCostomer = 0;
 
     while (again == 1)
     {
 
         title();
-       
 
         cout << "Press 1 to Enter as a ADMIN: " << endl;
         cout << "Press 2 to Enter as a CASHIER: " << endl;
@@ -39,7 +46,7 @@ int main()
         {
             int passwordAdmin;
             string adminName;
-            
+
             cout << "Please Enter the Admin Name :" << endl;
             cin >> adminName;
             cout << "Please Enter Password :" << endl;
@@ -52,9 +59,9 @@ int main()
             {
                 cout << "YOU SUCCESSFULLY ENTERED AS AN ADMIN  :" << endl;
                 int enteringKeyforProducts;
-                //ADMIN FUNCTIONALITIES STARTS FROM HERE:
+                // ADMIN FUNCTIONALITIES STARTS FROM HERE:
 
-                while (enteringKeyforProducts < 5)
+                while (enteringKeyforProducts < 6)
                 {
                     adminMenu(enteringKeyforProducts);
                     // admin key 1
@@ -68,17 +75,8 @@ int main()
                         string removedObjectName;
                         cout << "Enter a Product which is to be removed :" << endl;
                         cin >> removedObjectName;
-                        for (int i = 0; i < currentProducts; i++)
-                        {
-                            if (arr[i] == removedObjectName)
-                            {
-                                for (int j = i; j < currentProducts - 1; j++)
-                                {
-                                    arr[j] = arr[j + 1];
-                                }
-                                arr[currentProducts - 1] = "";
-                            }
-                        }
+                        // FOR REMOVING PRODUCTS
+                        removeProducts(arr, currentProducts, removedObjectName);
                         cout << "List after Removing objects :" << endl;
                         currentProducts = 0;
                         for (int i = 0; i < 100; i++)
@@ -125,6 +123,12 @@ int main()
                             cin >> cashierkey;
                         }
                     }
+                    // totalCostofitemsPurchased[currentCustomer] //////////////
+                    else if (enteringKeyforProducts == 5)
+                    {
+                        totalsalepurchase(totalCostofitemsPurchased, currentCustomer);
+                    }
+
                     else
                     {
                         cout << "Please Enter a Right key :" << endl;
@@ -136,7 +140,7 @@ int main()
             else
             {
                 cout << "YOU ENTERED WRONG ADMIN NAME OR PASSWORD :" << endl;
-                cout<<"PLEASE TRY AGAIN :"<<endl;
+                cout << "PLEASE TRY AGAIN :" << endl;
             }
         }
         // for cashier start entring key 2
@@ -164,55 +168,89 @@ int main()
                         namePassCompare(newcashier, currentcashier, cashname, namecomp, passcomp);
                     }
                 }
-                cout << "Please Enter Password :" << endl;
-                cin >> passwordCashier;
                 passcomp = false;
-                namePassCompare(cashierlogin, currentcashier, passwordCashier, namecomp, passcomp);
+                while (!passcomp)
+                {
+
+                    cout << "Please Enter Password :" << endl;
+                    cin >> passwordCashier;
+
+                    namePassCompare(cashierlogin, currentcashier, passwordCashier, namecomp, passcomp);
+                }
 
                 if (passcomp)
                 {
 
                     long double totalPurchasedAmountFromCostomer, totalPurchasedAmountFromWholesale;
-                    int key1;
-                    salePurchaseProfitLossMenu();
-                    cin >> key1;
+                    int key1 = 1;
 
-                    if (key1 == 1)
-                    {
-                        customerPurchase();
-                    }
+                    while (key1 < 5 && key1 >= 1)
 
-                    else if (key1 == 2)
                     {
-                        wholeSalePurchase(arr, priceOfProducts, currentProducts);
-                    }
+                        salePurchaseProfitLossMenu();
+                        cin >> key1;
+                        if (key1 == 1)
+                        {
+                            true1 = true;
+                            cout << "Enter the name of customer :" << endl;
+                            cin >> nameofCustomer[currentCustomer];
+                            while (true1)
+                            {
+                                customerPurchase(nameofproducts, nameofCustomer, totalCostofitemsPurchased, proSize, currentCustomer, proName, countpc, totalPurchasedAmountFromCostomer);
 
-                    else if (key1 == 3)
-                    {
-                        profitLoss(totalPurchasedAmountFromCostomer, totalPurchasedAmountFromWholesale);
-                    }
+                                removeProducts(arr, currentProducts, proName);
+                                addcashier(countpc, currentCustomer, true1);
+                            }
+                            displaygoto(countpc, nameofproducts, nameofCustomer, totalCostofitemsPurchased, proSize, currentCustomer);
+                        }
 
-                    else
-                    {
-                        cout << "Please Enter a right key" << endl;
-                    }
+                        else if (key1 == 2)
+                        {
+                            wholeSalePurchase(arr, priceOfProducts, currentProducts);
+                        }
 
-                    if (tryagain != 1)
-                    {
-                        cout << "You Entered wrong Password :" << endl;
+                        else if (key1 == 3)
+                        {
+                            profitLoss(totalPurchasedAmountFromCostomer, totalPurchasedAmountFromWholesale);
+                        }
+
+                        else if (key1 == 4)
+                        {
+                            key1 = 5;
+                            tryagain = 2;
+                        }
                     }
                 }
             }
         }
-        // if wrong key for admin and cashier
+        // if wrong key for  cashier
         else
         {
             cout << "Please Enter a Right key :" << endl;
         }
     }
 }
-void addcashier(string newcashier[100], string cashierlogin[100], int &currentcashier)
+
+void addcashier(int &countpc, int &currentCustomer, bool &true1)
 {
+    int key;
+
+    cout << "Press 1 to continue :" << endl;
+
+    cout << "Press any other key from 0 to 9 ,except 1 to Exit :" << endl;
+    cin >> key;
+    if (key == 1)
+    {
+
+        countpc++;
+    }
+    else if (key != 1)
+    {
+        true1 = false;
+        currentCustomer++;
+    }
+
+    system("cls");
 }
 void title()
 {
@@ -232,7 +270,8 @@ void adminMenu(int &enteringKeyforProducts)
     cout << "Enter key 2 to Remove Products :" << endl;
     cout << "Enter key 3 to count Total Products :" << endl;
     cout << "Enter key 4 to Add cashier :" << endl;
-    cout << "Enter key 5 to Exit " << endl;
+    cout << "Enter key 5 to see total sale purchase of the day :" << endl;
+    cout << "Enter key 6 to Exit " << endl;
     cin >> enteringKeyforProducts;
     system("cls");
 }
@@ -254,69 +293,24 @@ void profitLoss(long double &totalPurchasedAmountFromCostomer, long double &tota
         cout << "THERE IS NO ANY PROFIT OR LOSS :" << endl;
     }
 }
-double customerPurchase()
+double customerPurchase(string nameofproducts[][100], string nameofCustomer[], double totalCostofitemsPurchased[], int proSize, int currentCustomer, string &proName, int countpc, double totalPurchasedAmountFromCostomer)
 {
     // 1 : record of contomer details
     // yhan cashier customer sy intract kar saky ga
-    string nameofCustomer[100], nameofCustomerA11[100], nameofproductsA44[100], nameofproducts[100];
-    double noOfPurchaseditems[100], totalCostofitemsPurchased[100], noOfPurchaseditemsA22[100];
-    double totalCostofitemsPurchasedA33[100];
-    long double totalPurchasedAmountFromCostomer = 0;
-    int count3 = 0, count4 = 0, count5 = 0, key = 1, count1 = 0, count2 = 0;
 
-    while (key == 1)
-    {
+    int key = 1;
 
-        for (int i = 0; i < 1; i++)
-        {
-            cout << "Enter the name of customer :" << endl;
-            cin >> nameofCustomer[i];
+    cout << "Enter the name of product you want to purchase :" << endl;
+    cin >> proName;
 
-            nameofCustomerA11[count1] = nameofCustomer[i];
-            count1++;
-        }
-        for (int l = 0; l < 1; l++)
-        {
-            cout << "Enter the name of product you want to purchase :" << endl;
-            cin >> nameofproducts[l];
-            nameofproductsA44[count5] = nameofproducts[l];
-            count5++;
-        }
+    nameofproducts[currentCustomer][countpc] = proName;
+    cout << "Enter total cost of items that a customer purchased :" << endl;
+    cin >> totalPurchasedAmountFromCostomer;
 
-        for (int j = 0; j < 1; j++)
-        {
-            cout << "Enter how much customer purchased items :" << endl;
-            cin >> noOfPurchaseditems[j];
-
-            noOfPurchaseditemsA22[count2] = noOfPurchaseditems[j];
-            count2++;
-        }
-
-        for (int k = 0; k < 1; k++)
-        {
-            cout << "Enter total cost of items that a customer purchased :" << endl;
-            cin >> totalCostofitemsPurchased[k];
-
-            totalCostofitemsPurchasedA33[count3] = totalCostofitemsPurchased[k];
-
-            totalPurchasedAmountFromCostomer = totalPurchasedAmountFromCostomer + totalCostofitemsPurchasedA33[count3];
-            count3++;
-        }
-
-        count4++;
-
-        cout << "Press 1 to continue :" << endl;
-
-        cout << "Press any other key from 0 to 9 ,except 1 to Exit :" << endl;
-        cin >> key;
-        if (key != 1)
-        {
-            cout << totalPurchasedAmountFromCostomer;
-            key = 2;
-        }
-        system("cls");
-    }
-
+    totalCostofitemsPurchased[currentCustomer] = totalPurchasedAmountFromCostomer + totalCostofitemsPurchased[currentCustomer];
+}
+void displaygoto(int countpc, string nameofproducts[][100], string nameofCustomer[], double totalCostofitemsPurchased[], int proSize, int currentCustomer)
+{
     // record of customers
     int x = 3, y = 1;
     gotoxy(x, y);
@@ -325,31 +319,30 @@ double customerPurchase()
 
     gotoxy(x, y);
     cout << "NAME OF PRODUCTS";
-    x = x + 25;
-    gotoxy(x, y);
-    cout << "NO. OF ITEMS PURCHASED ";
+
     x = x + 25;
     gotoxy(x, y);
     cout << "THEIR TOTAL COST ";
-    x = x - 75;
+    x = x - 50;
     y = y + 1;
-    for (int i = 0; i < count4; i++)
+    for (int i = 0; i < currentCustomer; i++)
     {
-        gotoxy(x, y);
-        cout << nameofCustomerA11[i];
-        x = x + 25;
-        gotoxy(x, y);
-        cout << nameofproductsA44[i];
-        x = x + 25;
-        gotoxy(x, y);
-        cout << noOfPurchaseditemsA22[i];
-        x = x + 25;
-        gotoxy(x, y);
-        cout << totalCostofitemsPurchasedA33[i];
-
-        x = x - 75;
-        y = y + 1;
+        for (int j = 0; j <= countpc; j++)
+        {
+            gotoxy(x, y);
+            cout << nameofCustomer[i];
+            x = x + 25;
+            gotoxy(x, y);
+            cout << nameofproducts[i][j];
+            x = x + 25;
+            gotoxy(x, y);
+            cout << totalCostofitemsPurchased[i];
+            x = x - 50;
+            y = y + 1;
+        }
     }
+    cout << endl;
+    getch();
 }
 void wholeSalePurchase(string arr[], int priceOfProducts[], int &currentProducts)
 {
@@ -395,18 +388,22 @@ void wholeSalePurchase(string arr[], int priceOfProducts[], int &currentProducts
             y = y + 1;
             for (int i = 0; i < currentProducts; i++)
             {
-                gotoxy(x, y);
-                cout << arr[i];
-                x = x + 25;
-                gotoxy(x, y);
-                cout << noOfPurchaseditemsFromWholesale[i];
-                x = x + 25;
-                gotoxy(x, y);
-                cout << priceOfProducts[i];
-                x = x - 50;
-                y = y + 1;
+                if (arr[i] != "")
+                {
+
+                    gotoxy(x, y);
+                    cout << arr[i];
+                    x = x + 25;
+                    gotoxy(x, y);
+                    cout << noOfPurchaseditemsFromWholesale[i];
+                    x = x + 25;
+                    gotoxy(x, y);
+                    cout << priceOfProducts[i];
+                    x = x - 50;
+                    y = y + 1;
+                }
             }
-            cout<<endl;
+            cout << endl;
             cout << "TOTAL PURCHASE AMOUNT IS :" << totalPurchasedAmountFromWholesale << endl;
             key2 = 2;
             getch();
@@ -441,6 +438,7 @@ void salePurchaseProfitLossMenu()
     cout << "Enter key 1 to sale products to customer :" << endl;
     cout << "Enter key 2 to buy products from wholesale :" << endl;
     cout << "Enter key 3 to check profit and loss" << endl;
+    cout << "Enter key 4 to Exit " << endl;
 }
 void gotoxy(int x, int y)
 {
@@ -449,7 +447,6 @@ void gotoxy(int x, int y)
     coord.Y = y;
     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
 }
-
 void displayProducts(int priceOfProducts[], string arr[], int currentProducts)
 {
     for (int i = 0; i < currentProducts; i++)
@@ -498,4 +495,28 @@ void namePassCompare(string cashierlogin[], int currentcashier, string passwordC
             namecomp = true;
         }
     }
+}
+void removeProducts(string arr[], int &currentProducts, string removedObjectName)
+{
+    for (int i = 0; i < currentProducts; i++)
+    {
+        if (arr[i] == removedObjectName)
+        {
+            for (int j = i; j < currentProducts - 1; j++)
+            {
+                arr[j] = arr[j + 1];
+            }
+            arr[currentProducts - 1] = "";
+        }
+    }
+}
+void totalsalepurchase(double totalCostofitemsPurchased[], int currentCustomer)
+{
+    int totalamountoftheday = 0;
+    for (int i = 0; i < currentCustomer; i++)
+    {
+        totalamountoftheday = totalamountoftheday + totalCostofitemsPurchased[i];
+    }
+    cout << "TOTAL SALE OF THE DAY = " << totalamountoftheday << endl;
+    getch();
 }
